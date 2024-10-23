@@ -9,7 +9,7 @@ CSF provides some docker filtering by default in /etc/csf/csf.conf so try that f
 
 1. Copy the script to /etc/csf/csfpost.sh
    ```sh
-   wget -O /etc/csf/csfpost.sh https://raw.githubusercontent.com/Scott-Mc/refs/heads/main/csfpost.sh
+   wget -O /etc/csf/csfpost.sh https://raw.githubusercontent.com/Scott-Mc/csf-docker/refs/heads/main/csfpost.sh
    ```
 2. Ensure the script is executable:
    ```sh
