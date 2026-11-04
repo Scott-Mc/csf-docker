@@ -124,16 +124,24 @@ done
 containers=$(docker ps -q)
 if [ $(echo ${containers} | wc -c) -gt "1" ]; then
     for container in ${containers}; do
-        # Dynamically fetch the first network name
-        network_name=$(docker inspect -f '{{range $key, $value := .NetworkSettings.Networks}}{{$key}}{{end}}' ${container})
+        # Dynamically fetch the first network name by adding a space and piping to awk
+        network_name=$(docker inspect -f '{{range $key, $value := .NetworkSettings.Networks}}{{$key}} {{end}}' ${container} | awk '{print $1}')
 
-        if [ "${network_name}" == "bridge" ]; then
-            # Default bridge network
+        if [ -z "$network_name" ]; then
+            continue
+        fi
+
+        if [ "${network_name}" == "bridge" ] || [ "${network_name}" == "host" ]; then
+            # Default bridge network or host network
             DOCKER_NET_INT=${DOCKER_INT}
             ipaddr=$(docker inspect -f "{{.NetworkSettings.IPAddress}}" ${container})
         else
             # Custom network, fetch details dynamically
             bridge=$(docker inspect -f "{{with index .NetworkSettings.Networks \"${network_name}\"}}{{.NetworkID}}{{end}}" ${container} | cut -c -12)
+
+            if [ -z "$bridge" ]; then
+                continue
+            fi
 
             # Fallback to manually prepending "br-" if bridge name is not found in Options
             DOCKER_NET_INT=$(docker network inspect -f '{{index .Options "com.docker.network.bridge.name"}}' ${bridge})
